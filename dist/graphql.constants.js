@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GRAPHQL_SDL_FILE_HEADER = exports.DEFINITIONS_FILE_HEADER = exports.SUBSCRIPTION_TYPE = exports.GRAPHQL_MODULE_ID = exports.GRAPHQL_MODULE_OPTIONS = exports.FIELD_TYPENAME = exports.CLASS_TYPE_METADATA = exports.SUBSCRIPTION_OPTIONS_METADATA = exports.PARAM_ARGS_METADATA = exports.PLUGIN_METADATA = exports.SCALAR_TYPE_METADATA = exports.SCALAR_NAME_METADATA = exports.RESOLVER_DELEGATE_METADATA = exports.RESOLVER_PROPERTY_METADATA = exports.RESOLVER_NAME_METADATA = exports.RESOLVER_TYPE_METADATA = void 0;
+exports.GRAPHQL_SDL_FILE_HEADER = exports.DEFINITIONS_FILE_HEADER = exports.SUBSCRIPTION_TYPE = exports.GRAPHQL_MODULE_ID = exports.GRAPHQL_MODULE_OPTIONS = exports.FIELD_TYPENAME = exports.CLASS_TYPE_METADATA = exports.SUBSCRIPTION_OPTIONS_METADATA = exports.PARAM_ARGS_METADATA = exports.PLUGIN_METADATA = exports.SCALAR_TYPE_METADATA = exports.SCALAR_NAME_METADATA = exports.RESOLVER_DELEGATE_METADATA = exports.FIELD_RESOLVER_MIDDLEWARE_METADATA = exports.RESOLVER_PROPERTY_METADATA = exports.RESOLVER_NAME_METADATA = exports.RESOLVER_TYPE_METADATA = void 0;
 exports.RESOLVER_TYPE_METADATA = 'graphql:resolver_type';
 exports.RESOLVER_NAME_METADATA = 'graphql:resolver_name';
 exports.RESOLVER_PROPERTY_METADATA = 'graphql:resolve_property';
+exports.FIELD_RESOLVER_MIDDLEWARE_METADATA = 'graphql:field_resolver_middleware';
 exports.RESOLVER_DELEGATE_METADATA = 'graphql:delegate_property';
 exports.SCALAR_NAME_METADATA = 'graphql:scalar_name';
 exports.SCALAR_TYPE_METADATA = 'graphql:scalar_type';
@@ -16,7 +17,8 @@ exports.GRAPHQL_MODULE_OPTIONS = 'GqlModuleOptions';
 exports.GRAPHQL_MODULE_ID = 'GqlModuleId';
 exports.SUBSCRIPTION_TYPE = 'Subscription';
 exports.DEFINITIONS_FILE_HEADER = `
-/** ------------------------------------------------------
+/*
+ * ------------------------------------------------------
  * THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
  * -------------------------------------------------------
  */

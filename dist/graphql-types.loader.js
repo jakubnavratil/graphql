@@ -28,17 +28,27 @@ let GraphQLTypesLoader = (() => {
         }
         getTypesFromPaths(paths) {
             return tslib_1.__awaiter(this, void 0, void 0, function* () {
-                paths = util.isArray(paths)
+                const includeNodeModules = this.includeNodeModules(paths);
+                paths = Array.isArray(paths)
                     ? paths.map((path) => normalize(path))
                     : normalize(paths);
                 const filePaths = yield glob(paths, {
-                    ignore: ['node_modules'],
+                    ignore: includeNodeModules ? [] : ['node_modules'],
                 });
+                if (filePaths.length === 0) {
+                    throw new Error(`No type definitions were found with the specified file name patterns: "${paths}". Please make sure there is at least one file that matches the given patterns.`);
+                }
                 const fileContentsPromises = filePaths.sort().map((filePath) => {
                     return readFile(filePath.toString(), 'utf8');
                 });
                 return Promise.all(fileContentsPromises);
             });
+        }
+        includeNodeModules(pathOrPaths) {
+            if (Array.isArray(pathOrPaths)) {
+                return pathOrPaths.some((path) => path.includes('node_modules'));
+            }
+            return pathOrPaths.includes('node_modules');
         }
     };
     GraphQLTypesLoader = tslib_1.__decorate([

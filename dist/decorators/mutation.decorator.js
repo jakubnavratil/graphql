@@ -34,6 +34,7 @@ function Mutation(nameOrType, options = {}) {
                 returnTypeOptions: typeOptions,
                 description: options.description,
                 deprecationReason: options.deprecationReason,
+                complexity: options.complexity,
             };
             type_metadata_storage_1.TypeMetadataStorage.addMutationMetadata(metadata);
         });

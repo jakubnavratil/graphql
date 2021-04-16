@@ -5,6 +5,7 @@ const tslib_1 = require("tslib");
 const shared_utils_1 = require("@nestjs/common/utils/shared.utils");
 const field_decorator_1 = require("../../decorators/field.decorator");
 const plugin_constants_1 = require("../../plugin/plugin-constants");
+const cannot_determine_host_type_error_1 = require("../errors/cannot-determine-host-type.error");
 const undefined_type_error_1 = require("../errors/undefined-type.error");
 const is_target_equal_util_1 = require("../utils/is-target-equal-util");
 const is_throwing_util_1 = require("../utils/is-throwing.util");
@@ -98,10 +99,23 @@ class TypeMetadataStorageHost {
         return this.unions;
     }
     addDirectiveMetadata(metadata) {
-        this.classDirectives.push(metadata);
+        const exist = this.fieldDirectives.some((directiveMetadata) => {
+            return (directiveMetadata.sdl === metadata.sdl &&
+                directiveMetadata.target === metadata.target);
+        });
+        if (!exist) {
+            this.classDirectives.push(metadata);
+        }
     }
     addDirectivePropertyMetadata(metadata) {
-        this.fieldDirectives.push(metadata);
+        const exist = this.fieldDirectives.some((directiveMetadata) => {
+            return (directiveMetadata.fieldName === metadata.fieldName &&
+                directiveMetadata.sdl === metadata.sdl &&
+                directiveMetadata.target === metadata.target);
+        });
+        if (!exist) {
+            this.fieldDirectives.push(metadata);
+        }
     }
     addExtensionsMetadata(metadata) {
         this.classExtensions.push(metadata);
@@ -154,7 +168,7 @@ class TypeMetadataStorageHost {
     }
     loadClassPluginMetadata(metadata) {
         metadata
-            .filter((item) => item.target)
+            .filter((item) => item === null || item === void 0 ? void 0 : item.target)
             .forEach((item) => this.applyPluginMetadata(item.target.prototype));
     }
     applyPluginMetadata(prototype) {
@@ -244,9 +258,13 @@ class TypeMetadataStorageHost {
         const objectTypeRef = this.resolvers
             .find((el) => is_target_equal_util_1.isTargetEqual(el, item))
             .typeFn();
-        const objectTypeMetadata = this.objectTypes.find((objTypeDef) => objTypeDef.target === objectTypeRef);
-        const objectTypeField = objectTypeMetadata.properties.find((fieldDef) => fieldDef.name === item.methodName);
-        if (!objectTypeField) {
+        const objectOrInterfaceTypeMetadata = this.objectTypes.find((objTypeDef) => objTypeDef.target === objectTypeRef) ||
+            this.interfaces.find((interfaceTypeDef) => interfaceTypeDef.target === objectTypeRef);
+        if (!objectOrInterfaceTypeMetadata) {
+            throw new cannot_determine_host_type_error_1.CannotDetermineHostTypeError(item.schemaName, objectTypeRef === null || objectTypeRef === void 0 ? void 0 : objectTypeRef.name);
+        }
+        const objectOrInterfaceTypeField = objectOrInterfaceTypeMetadata.properties.find((fieldDef) => fieldDef.name === item.methodName);
+        if (!objectOrInterfaceTypeField) {
             if (!item.typeFn || !item.typeOptions) {
                 throw new undefined_type_error_1.UndefinedTypeError(item.target.name, item.methodName);
             }
@@ -264,20 +282,23 @@ class TypeMetadataStorageHost {
                 complexity: item.complexity,
             };
             this.addClassFieldMetadata(fieldMetadata);
-            objectTypeMetadata.properties.push(fieldMetadata);
+            objectOrInterfaceTypeMetadata.properties.push(fieldMetadata);
         }
         else {
             const isEmpty = (arr) => arr.length === 0;
-            if (isEmpty(objectTypeField.methodArgs)) {
-                objectTypeField.methodArgs = item.methodArgs;
+            if (isEmpty(objectOrInterfaceTypeField.methodArgs)) {
+                objectOrInterfaceTypeField.methodArgs = item.methodArgs;
             }
-            if (isEmpty(objectTypeField.directives)) {
-                objectTypeField.directives = item.directives;
+            if (isEmpty(objectOrInterfaceTypeField.directives)) {
+                objectOrInterfaceTypeField.directives = item.directives;
             }
-            if (!objectTypeField.extensions) {
-                objectTypeField.extensions = item.extensions;
+            if (!objectOrInterfaceTypeField.extensions) {
+                objectOrInterfaceTypeField.extensions = item.extensions;
             }
-            objectTypeField.complexity = item.complexity;
+            objectOrInterfaceTypeField.complexity =
+                item.complexity === undefined
+                    ? objectOrInterfaceTypeField.complexity
+                    : item.complexity;
         }
     }
     compileExtendedResolversMetadata() {

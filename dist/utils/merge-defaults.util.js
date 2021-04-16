@@ -10,18 +10,18 @@ const defaultOptions = {
 function mergeDefaults(options, defaults = defaultOptions) {
     const moduleOptions = Object.assign(Object.assign({}, defaults), options);
     if (!moduleOptions.context) {
-        moduleOptions.context = ({ req }) => ({ req });
+        moduleOptions.context = ({ req, request }) => ({ req: req !== null && req !== void 0 ? req : request });
     }
     else if (shared_utils_1.isFunction(moduleOptions.context)) {
         moduleOptions.context = (...args) => tslib_1.__awaiter(this, void 0, void 0, function* () {
             const ctx = yield options.context(...args);
-            const { req } = args[0];
-            return assignReqProperty(ctx, req);
+            const { req, request } = args[0];
+            return assignReqProperty(ctx, req !== null && req !== void 0 ? req : request);
         });
     }
     else {
-        moduleOptions.context = ({ req }) => {
-            return assignReqProperty(options.context, req);
+        moduleOptions.context = ({ req, request }) => {
+            return assignReqProperty(options.context, req !== null && req !== void 0 ? req : request);
         };
     }
     return moduleOptions;

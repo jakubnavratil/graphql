@@ -30,7 +30,10 @@ let GraphQLAstExplorer = (() => {
                 let { definitions } = documentNode;
                 definitions = lodash_1.sortBy(definitions, ['kind', 'name']);
                 definitions.forEach((item) => this.lookupDefinition(item, tsFile, mode, options));
-                tsFile.insertText(0, graphql_constants_1.DEFINITIONS_FILE_HEADER);
+                const header = options.additionalHeader
+                    ? `${graphql_constants_1.DEFINITIONS_FILE_HEADER}\n${options.additionalHeader}\n\n`
+                    : graphql_constants_1.DEFINITIONS_FILE_HEADER;
+                tsFile.insertText(0, header);
                 return tsFile;
             });
         }
@@ -39,15 +42,21 @@ let GraphQLAstExplorer = (() => {
                 case 'SchemaDefinition':
                     return this.lookupRootSchemaDefinition(item.operationTypes, tsFile, mode);
                 case 'ObjectTypeDefinition':
+                case 'ObjectTypeExtension':
                 case 'InputObjectTypeDefinition':
+                case 'InputObjectTypeExtension':
                     return this.addObjectTypeDefinition(item, tsFile, mode, options);
                 case 'InterfaceTypeDefinition':
+                case 'InterfaceTypeExtension':
                     return this.addObjectTypeDefinition(item, tsFile, 'interface', options);
                 case 'ScalarTypeDefinition':
-                    return this.addScalarDefinition(item, tsFile);
+                case 'ScalarTypeExtension':
+                    return this.addScalarDefinition(item, tsFile, options);
                 case 'EnumTypeDefinition':
+                case 'EnumTypeExtension':
                     return this.addEnumDefinition(item, tsFile);
                 case 'UnionTypeDefinition':
+                case 'UnionTypeExtension':
                     return this.addUnionDefinition(item, tsFile);
             }
         }
@@ -145,7 +154,7 @@ let GraphQLAstExplorer = (() => {
             if (options.skipResolverArgs) {
                 parentRef.addProperty({
                     name: propertyName,
-                    type,
+                    type: this.addSymbolIfRoot(type),
                     hasQuestionToken: !required,
                 });
             }
@@ -153,7 +162,7 @@ let GraphQLAstExplorer = (() => {
                 parentRef.addMethod({
                     isAbstract: mode === 'class',
                     name: propertyName,
-                    returnType: `${type} | Promise<${type}>`,
+                    returnType: `${this.addSymbolIfRoot(type)} | Promise<${this.addSymbolIfRoot(type)}>`,
                     parameters: this.getFunctionParameters(item.arguments),
                 });
             }
@@ -215,14 +224,17 @@ let GraphQLAstExplorer = (() => {
                 };
             });
         }
-        addScalarDefinition(item, tsFile) {
+        addScalarDefinition(item, tsFile, options) {
+            var _a, _b;
             const name = lodash_1.get(item, 'name.value');
             if (!name || name === 'Date') {
                 return;
             }
+            const typeMapping = (_a = options.customScalarTypeMapping) === null || _a === void 0 ? void 0 : _a[name];
+            const mappedTypeName = typeof typeMapping === 'string' ? typeMapping : typeMapping === null || typeMapping === void 0 ? void 0 : typeMapping.name;
             tsFile.addTypeAlias({
                 name,
-                type: 'any',
+                type: (_b = mappedTypeName !== null && mappedTypeName !== void 0 ? mappedTypeName : options.defaultScalarType) !== null && _b !== void 0 ? _b : 'any',
                 isExported: true,
             });
         }

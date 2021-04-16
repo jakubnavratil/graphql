@@ -35,6 +35,7 @@ let GraphQLSchemaFactory = (() => {
                     options = scalarsOrOptions;
                 }
                 type_metadata_storage_1.TypeMetadataStorage.clear();
+                this.typeDefinitionsGenerator.clearTypeDefinitionStorage();
                 lazy_metadata_storage_1.LazyMetadataStorage.load(resolvers);
                 type_metadata_storage_1.TypeMetadataStorage.compile(options.orphanedTypes);
                 this.typeDefinitionsGenerator.generate(options);

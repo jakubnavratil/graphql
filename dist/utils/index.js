@@ -8,3 +8,4 @@ tslib_1.__exportStar(require("./generate-token.util"), exports);
 tslib_1.__exportStar(require("./merge-defaults.util"), exports);
 tslib_1.__exportStar(require("./normalize-route-path.util"), exports);
 tslib_1.__exportStar(require("./remove-temp.util"), exports);
+tslib_1.__exportStar(require("./get-apollo-server"), exports);

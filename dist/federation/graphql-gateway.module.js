@@ -12,10 +12,14 @@ const federation_constants_1 = require("./federation.constants");
 let GraphQLGatewayModule = (() => {
     var GraphQLGatewayModule_1;
     let GraphQLGatewayModule = GraphQLGatewayModule_1 = class GraphQLGatewayModule {
-        constructor(httpAdapterHost, buildService, options) {
+        constructor(httpAdapterHost, buildService, options, applicationConfig) {
             this.httpAdapterHost = httpAdapterHost;
             this.buildService = buildService;
             this.options = options;
+            this.applicationConfig = applicationConfig;
+        }
+        get apolloServer() {
+            return this._apolloServer;
         }
         static forRoot(options) {
             return {
@@ -76,29 +80,38 @@ let GraphQLGatewayModule = (() => {
                 const { ApolloGateway } = load_package_util_1.loadPackage('@apollo/gateway', 'ApolloGateway', () => require('@apollo/gateway'));
                 const { options: { server: serverOpts = {}, gateway: gatewayOpts = {} }, buildService, } = this;
                 const gateway = new ApolloGateway(Object.assign(Object.assign({}, gatewayOpts), { buildService }));
-                this.registerGqlServer(Object.assign(Object.assign({}, serverOpts), { gateway, subscriptions: false }));
+                yield this.registerGqlServer(Object.assign(Object.assign({}, serverOpts), { gateway, subscriptions: false }));
                 if (serverOpts.installSubscriptionHandlers) {
                     throw new Error('No support for subscriptions yet when using Apollo Federation');
                 }
             });
         }
+        onModuleDestroy() {
+            var _a;
+            return tslib_1.__awaiter(this, void 0, void 0, function* () {
+                yield ((_a = this._apolloServer) === null || _a === void 0 ? void 0 : _a.stop());
+            });
+        }
         registerGqlServer(apolloOptions) {
-            const httpAdapter = this.httpAdapterHost.httpAdapter;
-            const adapterName = httpAdapter.constructor && httpAdapter.constructor.name;
-            if (adapterName === 'ExpressAdapter') {
-                this.registerExpress(apolloOptions);
-            }
-            else if (adapterName === 'FastifyAdapter') {
-                this.registerFastify(apolloOptions);
-            }
-            else {
-                throw new Error(`No support for current HttpAdapter: ${adapterName}`);
-            }
+            return tslib_1.__awaiter(this, void 0, void 0, function* () {
+                const httpAdapter = this.httpAdapterHost.httpAdapter;
+                const adapterName = httpAdapter.constructor && httpAdapter.constructor.name;
+                if (adapterName === 'ExpressAdapter') {
+                    this.registerExpress(apolloOptions);
+                }
+                else if (adapterName === 'FastifyAdapter') {
+                    yield this.registerFastify(apolloOptions);
+                }
+                else {
+                    throw new Error(`No support for current HttpAdapter: ${adapterName}`);
+                }
+            });
         }
         registerExpress(apolloOptions) {
             const { ApolloServer } = load_package_util_1.loadPackage('apollo-server-express', 'GraphQLModule', () => require('apollo-server-express'));
-            const { disableHealthCheck, onHealthCheck, cors, bodyParserConfig, path, } = apolloOptions;
+            const { disableHealthCheck, onHealthCheck, cors, bodyParserConfig, } = apolloOptions;
             const app = this.httpAdapterHost.httpAdapter.getInstance();
+            const path = this.getNormalizedPath(apolloOptions);
             const apolloServer = new ApolloServer(apolloOptions);
             apolloServer.applyMiddleware({
                 app,
@@ -108,22 +121,34 @@ let GraphQLGatewayModule = (() => {
                 cors,
                 bodyParserConfig,
             });
-            this.apolloServer = apolloServer;
+            this._apolloServer = apolloServer;
         }
         registerFastify(apolloOptions) {
-            const { ApolloServer } = load_package_util_1.loadPackage('apollo-server-fastify', 'GraphQLModule', () => require('apollo-server-fastify'));
-            const httpAdapter = this.httpAdapterHost.httpAdapter;
-            const app = httpAdapter.getInstance();
-            const apolloServer = new ApolloServer(apolloOptions);
-            const { disableHealthCheck, onHealthCheck, cors, bodyParserConfig, path, } = apolloOptions;
-            app.register(apolloServer.createHandler({
-                disableHealthCheck,
-                onHealthCheck,
-                cors,
-                bodyParserConfig,
-                path,
-            }));
-            this.apolloServer = apolloServer;
+            return tslib_1.__awaiter(this, void 0, void 0, function* () {
+                const { ApolloServer } = load_package_util_1.loadPackage('apollo-server-fastify', 'GraphQLModule', () => require('apollo-server-fastify'));
+                const httpAdapter = this.httpAdapterHost.httpAdapter;
+                const app = httpAdapter.getInstance();
+                const path = this.getNormalizedPath(apolloOptions);
+                const apolloServer = new ApolloServer(apolloOptions);
+                const { disableHealthCheck, onHealthCheck, cors, bodyParserConfig, } = apolloOptions;
+                yield app.register(apolloServer.createHandler({
+                    disableHealthCheck,
+                    onHealthCheck,
+                    cors,
+                    bodyParserConfig,
+                    path,
+                }));
+                this._apolloServer = apolloServer;
+            });
+        }
+        getNormalizedPath(apolloOptions) {
+            var _a;
+            const prefix = this.applicationConfig.getGlobalPrefix();
+            const useGlobalPrefix = prefix && ((_a = this.options.server) === null || _a === void 0 ? void 0 : _a.useGlobalPrefix);
+            const gqlOptionsPath = utils_1.normalizeRoutePath(apolloOptions.path);
+            return useGlobalPrefix
+                ? utils_1.normalizeRoutePath(prefix) + gqlOptionsPath
+                : gqlOptionsPath;
         }
     };
     GraphQLGatewayModule = GraphQLGatewayModule_1 = tslib_1.__decorate([
@@ -132,7 +157,7 @@ let GraphQLGatewayModule = (() => {
         tslib_1.__param(1, common_1.Optional()),
         tslib_1.__param(1, common_1.Inject(_1.GATEWAY_BUILD_SERVICE)),
         tslib_1.__param(2, common_1.Inject(federation_constants_1.GRAPHQL_GATEWAY_MODULE_OPTIONS)),
-        tslib_1.__metadata("design:paramtypes", [core_1.HttpAdapterHost, Function, Object])
+        tslib_1.__metadata("design:paramtypes", [core_1.HttpAdapterHost, Function, Object, core_1.ApplicationConfig])
     ], GraphQLGatewayModule);
     return GraphQLGatewayModule;
 })();

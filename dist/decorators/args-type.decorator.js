@@ -12,6 +12,7 @@ function ArgsType() {
             target,
         };
         lazy_metadata_storage_1.LazyMetadataStorage.store(() => type_metadata_storage_1.TypeMetadataStorage.addArgsMetadata(metadata));
+        type_metadata_storage_1.TypeMetadataStorage.addArgsMetadata(metadata);
         add_class_type_metadata_util_1.addClassTypeMetadata(target, class_type_enum_1.ClassType.ARGS);
     };
 }

@@ -35,6 +35,19 @@ let AstDefinitionNodeFactory = (() => {
                 directives: directiveMetadata.map(this.createDirectiveNode),
             };
         }
+        createInterfaceTypeNode(name, directiveMetadata) {
+            if (shared_utils_1.isEmpty(directiveMetadata)) {
+                return;
+            }
+            return {
+                kind: 'InterfaceTypeDefinition',
+                name: {
+                    kind: 'Name',
+                    value: name,
+                },
+                directives: directiveMetadata.map(this.createDirectiveNode),
+            };
+        }
         createFieldNode(name, type, directiveMetadata) {
             if (shared_utils_1.isEmpty(directiveMetadata)) {
                 return;
@@ -79,7 +92,7 @@ let AstDefinitionNodeFactory = (() => {
             const parsed = graphql_1.parse(`type String ${directive.sdl}`);
             const definitions = parsed.definitions;
             const directives = definitions
-                .filter(item => item.directives && item.directives.length > 0)
+                .filter((item) => item.directives && item.directives.length > 0)
                 .map(({ directives }) => directives)
                 .reduce((acc, item) => [...acc, ...item]);
             if (directives.length !== 1) {

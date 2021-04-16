@@ -1,1 +1,2 @@
-export declare class GraphQLSchemaBuilderModule {}
+export declare class GraphQLSchemaBuilderModule {
+}

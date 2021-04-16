@@ -8,30 +8,21 @@ import { ArgsFactory } from './args.factory';
 import { AstDefinitionNodeFactory } from './ast-definition-node.factory';
 import { OutputTypeFactory } from './output-type.factory';
 export interface ObjectTypeDefinition {
-  target: Function;
-  type: GraphQLObjectType;
-  isAbstract: boolean;
-  interfaces: Function[];
+    target: Function;
+    type: GraphQLObjectType;
+    isAbstract: boolean;
+    interfaces: Function[];
 }
 export declare class ObjectTypeDefinitionFactory {
-  private readonly typeDefinitionsStorage;
-  private readonly outputTypeFactory;
-  private readonly typeFieldsAccessor;
-  private readonly astDefinitionNodeFactory;
-  private readonly orphanedReferenceRegistry;
-  private readonly argsFactory;
-  constructor(
-    typeDefinitionsStorage: TypeDefinitionsStorage,
-    outputTypeFactory: OutputTypeFactory,
-    typeFieldsAccessor: TypeFieldsAccessor,
-    astDefinitionNodeFactory: AstDefinitionNodeFactory,
-    orphanedReferenceRegistry: OrphanedReferenceRegistry,
-    argsFactory: ArgsFactory,
-  );
-  create(
-    metadata: ObjectTypeMetadata,
-    options: BuildSchemaOptions,
-  ): ObjectTypeDefinition;
-  private generateInterfaces;
-  private generateFields;
+    private readonly typeDefinitionsStorage;
+    private readonly outputTypeFactory;
+    private readonly typeFieldsAccessor;
+    private readonly astDefinitionNodeFactory;
+    private readonly orphanedReferenceRegistry;
+    private readonly argsFactory;
+    constructor(typeDefinitionsStorage: TypeDefinitionsStorage, outputTypeFactory: OutputTypeFactory, typeFieldsAccessor: TypeFieldsAccessor, astDefinitionNodeFactory: AstDefinitionNodeFactory, orphanedReferenceRegistry: OrphanedReferenceRegistry, argsFactory: ArgsFactory);
+    create(metadata: ObjectTypeMetadata, options: BuildSchemaOptions): ObjectTypeDefinition;
+    private generateInterfaces;
+    private generateFields;
+    private createFieldResolver;
 }

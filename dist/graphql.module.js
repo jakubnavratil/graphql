@@ -26,6 +26,9 @@ let GraphQLModule = (() => {
             this.graphqlTypesLoader = graphqlTypesLoader;
             this.applicationConfig = applicationConfig;
         }
+        get apolloServer() {
+            return this._apolloServer;
+        }
         static forRoot(options = {}) {
             options = utils_1.mergeDefaults(options);
             return {
@@ -89,27 +92,36 @@ let GraphQLModule = (() => {
                 const typeDefs = (yield this.graphqlTypesLoader.mergeTypesByPaths(this.options.typePaths)) || [];
                 const mergedTypeDefs = utils_1.extend(typeDefs, this.options.typeDefs);
                 const apolloOptions = yield this.graphqlFactory.mergeOptions(Object.assign(Object.assign({}, this.options), { typeDefs: mergedTypeDefs }));
+                yield this.runExecutorFactoryIfPresent(apolloOptions);
                 if (this.options.definitions && this.options.definitions.path) {
                     yield this.graphqlFactory.generateDefinitions(graphql_1.printSchema(apolloOptions.schema), this.options);
                 }
-                this.registerGqlServer(apolloOptions);
+                yield this.registerGqlServer(apolloOptions);
                 if (this.options.installSubscriptionHandlers) {
-                    this.apolloServer.installSubscriptionHandlers(httpAdapter.getHttpServer());
+                    this._apolloServer.installSubscriptionHandlers(httpAdapter.getHttpServer());
                 }
             });
         }
+        onModuleDestroy() {
+            var _a;
+            return tslib_1.__awaiter(this, void 0, void 0, function* () {
+                yield ((_a = this._apolloServer) === null || _a === void 0 ? void 0 : _a.stop());
+            });
+        }
         registerGqlServer(apolloOptions) {
-            const httpAdapter = this.httpAdapterHost.httpAdapter;
-            const platformName = httpAdapter.getType();
-            if (platformName === 'express') {
-                this.registerExpress(apolloOptions);
-            }
-            else if (platformName === 'fastify') {
-                this.registerFastify(apolloOptions);
-            }
-            else {
-                throw new Error(`No support for current HttpAdapter: ${platformName}`);
-            }
+            return tslib_1.__awaiter(this, void 0, void 0, function* () {
+                const httpAdapter = this.httpAdapterHost.httpAdapter;
+                const platformName = httpAdapter.getType();
+                if (platformName === 'express') {
+                    this.registerExpress(apolloOptions);
+                }
+                else if (platformName === 'fastify') {
+                    yield this.registerFastify(apolloOptions);
+                }
+                else {
+                    throw new Error(`No support for current HttpAdapter: ${platformName}`);
+                }
+            });
         }
         registerExpress(apolloOptions) {
             const { ApolloServer } = load_package_util_1.loadPackage('apollo-server-express', 'GraphQLModule', () => require('apollo-server-express'));
@@ -126,23 +138,25 @@ let GraphQLModule = (() => {
                 cors,
                 bodyParserConfig,
             });
-            this.apolloServer = apolloServer;
+            this._apolloServer = apolloServer;
         }
         registerFastify(apolloOptions) {
-            const { ApolloServer } = load_package_util_1.loadPackage('apollo-server-fastify', 'GraphQLModule', () => require('apollo-server-fastify'));
-            const httpAdapter = this.httpAdapterHost.httpAdapter;
-            const app = httpAdapter.getInstance();
-            const path = this.getNormalizedPath(apolloOptions);
-            const apolloServer = new ApolloServer(apolloOptions);
-            const { disableHealthCheck, onHealthCheck, cors, bodyParserConfig, } = this.options;
-            app.register(apolloServer.createHandler({
-                disableHealthCheck,
-                onHealthCheck,
-                cors,
-                bodyParserConfig,
-                path,
-            }));
-            this.apolloServer = apolloServer;
+            return tslib_1.__awaiter(this, void 0, void 0, function* () {
+                const { ApolloServer } = load_package_util_1.loadPackage('apollo-server-fastify', 'GraphQLModule', () => require('apollo-server-fastify'));
+                const httpAdapter = this.httpAdapterHost.httpAdapter;
+                const app = httpAdapter.getInstance();
+                const path = this.getNormalizedPath(apolloOptions);
+                const apolloServer = new ApolloServer(apolloOptions);
+                const { disableHealthCheck, onHealthCheck, cors, bodyParserConfig, } = this.options;
+                yield app.register(apolloServer.createHandler({
+                    disableHealthCheck,
+                    onHealthCheck,
+                    cors,
+                    bodyParserConfig,
+                    path,
+                }));
+                this._apolloServer = apolloServer;
+            });
         }
         getNormalizedPath(apolloOptions) {
             const prefix = this.applicationConfig.getGlobalPrefix();
@@ -151,6 +165,15 @@ let GraphQLModule = (() => {
             return useGlobalPrefix
                 ? utils_1.normalizeRoutePath(prefix) + gqlOptionsPath
                 : gqlOptionsPath;
+        }
+        runExecutorFactoryIfPresent(apolloOptions) {
+            return tslib_1.__awaiter(this, void 0, void 0, function* () {
+                if (!apolloOptions.executorFactory) {
+                    return;
+                }
+                const executor = yield apolloOptions.executorFactory(apolloOptions.schema);
+                apolloOptions.executor = executor;
+            });
         }
     };
     GraphQLModule = GraphQLModule_1 = tslib_1.__decorate([

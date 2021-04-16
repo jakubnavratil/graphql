@@ -10,7 +10,7 @@ const default_nullable_conflict_error_1 = require("../errors/default-nullable-co
 const invalid_nullable_option_error_1 = require("../errors/invalid-nullable-option.error");
 let TypeMapperSevice = (() => {
     let TypeMapperSevice = class TypeMapperSevice {
-        mapToScalarType(typeRef, scalarsMap = [], dateScalarMode = 'isoDate') {
+        mapToScalarType(typeRef, scalarsMap = [], dateScalarMode = 'isoDate', numberScalarMode = 'float') {
             if (typeRef instanceof graphql_1.GraphQLScalarType) {
                 return typeRef;
             }
@@ -19,9 +19,10 @@ let TypeMapperSevice = (() => {
                 return scalarHost.scalar;
             }
             const dateScalar = dateScalarMode === 'timestamp' ? scalars_1.GraphQLTimestamp : scalars_1.GraphQLISODateTime;
+            const numberScalar = numberScalarMode === 'float' ? graphql_1.GraphQLFloat : graphql_1.GraphQLInt;
             const typeScalarMapping = new Map([
                 [String, graphql_1.GraphQLString],
-                [Number, graphql_1.GraphQLFloat],
+                [Number, numberScalar],
                 [Boolean, graphql_1.GraphQLBoolean],
                 [Date, dateScalar],
             ]);

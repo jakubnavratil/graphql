@@ -34,6 +34,7 @@ function addFieldMetadata(typeOrOptions, fieldOptions, prototype, propertyKey, d
             description: options.description,
             deprecationReason: options.deprecationReason,
             complexity: options.complexity,
+            middleware: options.middleware,
         });
         if (isResolver) {
             type_metadata_storage_1.TypeMetadataStorage.addResolverPropertyMetadata({
@@ -49,7 +50,7 @@ function addFieldMetadata(typeOrOptions, fieldOptions, prototype, propertyKey, d
         applyMetadataFn();
     }
     else {
-        lazy_metadata_storage_1.LazyMetadataStorage.store(applyMetadataFn);
+        lazy_metadata_storage_1.LazyMetadataStorage.store(prototype.constructor, applyMetadataFn, { isField: true });
     }
 }
 exports.addFieldMetadata = addFieldMetadata;

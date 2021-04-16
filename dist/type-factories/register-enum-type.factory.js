@@ -8,6 +8,7 @@ function registerEnumType(enumRef, options) {
         ref: enumRef,
         name: options.name,
         description: options.description,
+        valuesMap: options.valuesMap || {},
     }));
 }
 exports.registerEnumType = registerEnumType;

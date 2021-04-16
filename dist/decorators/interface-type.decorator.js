@@ -11,8 +11,12 @@ function InterfaceType(nameOrOptions, interfaceOptions) {
         ? [nameOrOptions, interfaceOptions]
         : [undefined, nameOrOptions];
     return (target) => {
-        const metadata = Object.assign({ name: name || target.name, target }, options);
-        lazy_metadata_storage_1.LazyMetadataStorage.store(() => type_metadata_storage_1.TypeMetadataStorage.addInterfaceMetadata(metadata));
+        const addInterfaceMetadata = () => {
+            const metadata = Object.assign(Object.assign({ name: name || target.name, target }, options), { interfaces: options.implements });
+            type_metadata_storage_1.TypeMetadataStorage.addInterfaceMetadata(metadata);
+        };
+        addInterfaceMetadata();
+        lazy_metadata_storage_1.LazyMetadataStorage.store(() => addInterfaceMetadata());
         add_class_type_metadata_util_1.addClassTypeMetadata(target, class_type_enum_1.ClassType.INTERFACE);
     };
 }

@@ -14,8 +14,11 @@ let EnumDefinitionFactory = (() => {
                     name: metadata.name,
                     description: metadata.description,
                     values: Object.keys(enumValues).reduce((prevValue, key) => {
+                        const valueMap = metadata.valuesMap[key];
                         prevValue[key] = {
                             value: enumValues[key],
+                            description: valueMap === null || valueMap === void 0 ? void 0 : valueMap.description,
+                            deprecationReason: valueMap === null || valueMap === void 0 ? void 0 : valueMap.deprecationReason,
                         };
                         return prevValue;
                     }, {}),
@@ -23,7 +26,7 @@ let EnumDefinitionFactory = (() => {
             };
         }
         getEnumValues(enumObject) {
-            const enumKeys = Object.keys(enumObject).filter(key => isNaN(parseInt(key, 10)));
+            const enumKeys = Object.keys(enumObject).filter((key) => isNaN(parseInt(key, 10)));
             return enumKeys.reduce((prev, nextKey) => {
                 prev[nextKey] = enumObject[nextKey];
                 return prev;

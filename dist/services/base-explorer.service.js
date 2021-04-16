@@ -8,17 +8,26 @@ class BaseExplorerService {
             return [...modulesContainer.values()];
         }
         const whitelisted = this.includeWhitelisted(modulesContainer, include);
-        return whitelisted;
+        const modules = [];
+        const toCheck = [...whitelisted];
+        while (toCheck.length) {
+            const mod = toCheck.pop();
+            if (!modules.includes(mod)) {
+                modules.push(mod);
+                toCheck.push(...mod.imports);
+            }
+        }
+        return modules;
     }
     includeWhitelisted(modulesContainer, include) {
         const modules = [...modulesContainer.values()];
-        return modules.filter(({ metatype }) => include.some(item => item === metatype));
+        return modules.filter(({ metatype }) => include.some((item) => item === metatype));
     }
     flatMap(modules, callback) {
         const invokeMap = () => {
-            return modules.map(moduleRef => {
+            return modules.map((moduleRef) => {
                 const providers = [...moduleRef.providers.values()];
-                return providers.map(wrapper => callback(wrapper, moduleRef));
+                return providers.map((wrapper) => callback(wrapper, moduleRef));
             });
         };
         return lodash_1.flattenDeep(invokeMap()).filter(lodash_1.identity);

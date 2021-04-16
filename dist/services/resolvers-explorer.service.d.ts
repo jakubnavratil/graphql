@@ -7,46 +7,26 @@ import { GqlModuleOptions, SubscriptionOptions } from '..';
 import { ResolverMetadata } from '../interfaces/resolver-metadata.interface';
 import { BaseExplorerService } from './base-explorer.service';
 export declare class ResolversExplorerService extends BaseExplorerService {
-  private readonly modulesContainer;
-  private readonly metadataScanner;
-  private readonly externalContextCreator;
-  private readonly gqlOptions;
-  private readonly gqlParamsFactory;
-  private readonly injector;
-  constructor(
-    modulesContainer: ModulesContainer,
-    metadataScanner: MetadataScanner,
-    externalContextCreator: ExternalContextCreator,
-    gqlOptions: GqlModuleOptions,
-  );
-  explore(): any;
-  filterResolvers(
-    wrapper: InstanceWrapper,
-    moduleRef: Module,
-  ): ResolverMetadata[];
-  createContextCallback<T extends Record<string, any>>(
-    instance: T,
-    prototype: any,
-    wrapper: InstanceWrapper,
-    moduleRef: Module,
-    resolver: ResolverMetadata,
-    isRequestScoped: boolean,
-    transform?: Function,
-  ): (...args: any[]) => Promise<any>;
-  createSubscriptionMetadata(
-    createSubscribeContext: Function,
-    subscriptionOptions: SubscriptionOptions,
-    resolverMetadata: ResolverMetadata,
-    instanceRef: Record<string, any>,
-  ): {
-    callback: {
-      subscribe: any;
-      resolve: any;
+    private readonly modulesContainer;
+    private readonly metadataScanner;
+    private readonly externalContextCreator;
+    private readonly gqlOptions;
+    private readonly gqlParamsFactory;
+    private readonly injector;
+    constructor(modulesContainer: ModulesContainer, metadataScanner: MetadataScanner, externalContextCreator: ExternalContextCreator, gqlOptions: GqlModuleOptions);
+    explore(): any;
+    filterResolvers(wrapper: InstanceWrapper, moduleRef: Module): ResolverMetadata[];
+    createContextCallback<T extends Record<string, any>>(instance: T, prototype: any, wrapper: InstanceWrapper, moduleRef: Module, resolver: ResolverMetadata, isRequestScoped: boolean, transform?: Function): Function;
+    createSubscriptionMetadata(createSubscribeContext: Function, subscriptionOptions: SubscriptionOptions, resolverMetadata: ResolverMetadata, instanceRef: Record<string, any>): {
+        callback: {
+            subscribe: any;
+            resolve: any;
+        };
+        name: string;
+        type: string;
+        methodName: string;
     };
-    name: string;
-    type: string;
-    methodName: string;
-  };
-  getAllCtors(): Function[];
-  private registerContextProvider;
+    getAllCtors(): Function[];
+    private registerContextProvider;
+    private registerFieldMiddlewareIfExists;
 }

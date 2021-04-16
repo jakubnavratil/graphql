@@ -23,7 +23,7 @@ let GraphQLSchemaBuilder = (() => {
                 const scalarsMap = this.scalarsExplorerService.getScalarsMap();
                 try {
                     const buildSchemaOptions = options.buildSchemaOptions || {};
-                    return yield this.buildSchema(resolvers, autoSchemaFile, Object.assign(Object.assign({}, buildSchemaOptions), { scalarsMap, schemaDirectives: options.schemaDirectives }));
+                    return yield this.buildSchema(resolvers, autoSchemaFile, Object.assign(Object.assign({}, buildSchemaOptions), { scalarsMap, schemaDirectives: options.schemaDirectives }), options.sortSchema, options.transformAutoSchemaFile && options.transformSchema);
                 }
                 catch (err) {
                     if (err && err.details) {
@@ -42,7 +42,7 @@ let GraphQLSchemaBuilder = (() => {
                             ...graphql_1.specifiedDirectives,
                             ...this.loadFederationDirectives(),
                             ...((buildSchemaOptions && buildSchemaOptions.directives) || []),
-                        ], scalarsMap, schemaDirectives: options.schemaDirectives, skipCheck: true }));
+                        ], scalarsMap, schemaDirectives: options.schemaDirectives, skipCheck: true }), options.sortSchema, options.transformAutoSchemaFile && options.transformSchema);
                 }
                 catch (err) {
                     if (err && err.details) {
@@ -52,14 +52,20 @@ let GraphQLSchemaBuilder = (() => {
                 }
             });
         }
-        buildSchema(resolvers, autoSchemaFile, options = {}) {
+        buildSchema(resolvers, autoSchemaFile, options = {}, sortSchema, transformSchema) {
             return tslib_1.__awaiter(this, void 0, void 0, function* () {
                 const schema = yield this.gqlSchemaFactory.create(resolvers, options);
                 if (typeof autoSchemaFile !== 'boolean') {
                     const filename = shared_utils_1.isString(autoSchemaFile)
                         ? autoSchemaFile
                         : path_1.resolve(process.cwd(), 'schema.gql');
-                    const fileContent = graphql_constants_1.GRAPHQL_SDL_FILE_HEADER + graphql_1.printSchema(schema);
+                    const transformedSchema = transformSchema
+                        ? yield transformSchema(schema)
+                        : schema;
+                    const fileContent = graphql_constants_1.GRAPHQL_SDL_FILE_HEADER +
+                        graphql_1.printSchema(sortSchema
+                            ? graphql_1.lexicographicSortSchema(transformedSchema)
+                            : transformedSchema);
                     yield this.fileSystemHelper.writeFile(filename, fileContent);
                 }
                 return schema;

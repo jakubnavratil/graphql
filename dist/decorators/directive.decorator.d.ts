@@ -1,3 +1,1 @@
-export declare function Directive(
-  sdl: string,
-): MethodDecorator & PropertyDecorator & ClassDecorator;
+export declare function Directive(sdl: string): MethodDecorator & PropertyDecorator & ClassDecorator;

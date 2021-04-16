@@ -17,3 +17,5 @@ tslib_1.__exportStar(require("./services/gql-execution-context"), exports);
 tslib_1.__exportStar(require("./tokens"), exports);
 tslib_1.__exportStar(require("./type-factories"), exports);
 tslib_1.__exportStar(require("./type-helpers"), exports);
+var utils_1 = require("./utils");
+Object.defineProperty(exports, "getApolloServer", { enumerable: true, get: function () { return utils_1.getApolloServer; } });

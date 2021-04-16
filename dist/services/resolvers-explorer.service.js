@@ -18,6 +18,7 @@ const resolver_enum_1 = require("../enums/resolver.enum");
 const params_factory_1 = require("../factories/params.factory");
 const graphql_constants_1 = require("../graphql.constants");
 const async_iterator_util_1 = require("../utils/async-iterator.util");
+const decorate_field_resolver_util_1 = require("../utils/decorate-field-resolver.util");
 const extract_metadata_util_1 = require("../utils/extract-metadata.util");
 const base_explorer_service_1 = require("./base-explorer.service");
 let ResolversExplorerService = (() => {
@@ -67,7 +68,7 @@ let ResolversExplorerService = (() => {
                 resolver_enum_1.Resolver.SUBSCRIPTION,
             ].some((type) => type === resolver.type);
             const fieldResolverEnhancers = this.gqlOptions.fieldResolverEnhancers || [];
-            const contextOptions = isPropertyResolver
+            const contextOptions = isPropertyResolver && resolver.methodName !== graphql_constants_1.FIELD_TYPENAME
                 ? {
                     guards: fieldResolverEnhancers.includes('guards'),
                     filters: fieldResolverEnhancers.includes('filters'),
@@ -100,10 +101,14 @@ let ResolversExplorerService = (() => {
                     const callback = this.externalContextCreator.create(contextInstance, transform(contextInstance[resolver.methodName]), resolver.methodName, graphql_constants_1.PARAM_ARGS_METADATA, paramsFactory, contextId, wrapper.id, contextOptions, 'graphql');
                     return callback(...args);
                 });
-                return resolverCallback;
+                return isPropertyResolver
+                    ? this.registerFieldMiddlewareIfExists(resolverCallback, instance, resolver.methodName)
+                    : resolverCallback;
             }
             const resolverCallback = this.externalContextCreator.create(instance, prototype[resolver.methodName], resolver.methodName, graphql_constants_1.PARAM_ARGS_METADATA, paramsFactory, undefined, undefined, contextOptions, 'graphql');
-            return resolverCallback;
+            return isPropertyResolver
+                ? this.registerFieldMiddlewareIfExists(resolverCallback, instance, resolver.methodName)
+                : resolverCallback;
         }
         createSubscriptionMetadata(createSubscribeContext, subscriptionOptions, resolverMetadata, instanceRef) {
             const resolveFunc = subscriptionOptions &&
@@ -135,6 +140,16 @@ let ResolversExplorerService = (() => {
                 instance: request,
                 isResolved: true,
             });
+        }
+        registerFieldMiddlewareIfExists(resolverFn, instance, methodKey) {
+            var _a, _b;
+            const fieldMiddleware = Reflect.getMetadata(graphql_constants_1.FIELD_RESOLVER_MIDDLEWARE_METADATA, instance[methodKey]);
+            const middlewareFunctions = (((_b = (_a = this.gqlOptions) === null || _a === void 0 ? void 0 : _a.buildSchemaOptions) === null || _b === void 0 ? void 0 : _b.fieldMiddleware) || []).concat(fieldMiddleware || []);
+            if ((middlewareFunctions === null || middlewareFunctions === void 0 ? void 0 : middlewareFunctions.length) === 0) {
+                return resolverFn;
+            }
+            const originalResolveFnFactory = (...args) => () => resolverFn(...args);
+            return decorate_field_resolver_util_1.decorateFieldResolverWithMiddleware(originalResolveFnFactory, middlewareFunctions);
         }
     };
     ResolversExplorerService = tslib_1.__decorate([

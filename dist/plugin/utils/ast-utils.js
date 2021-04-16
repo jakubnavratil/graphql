@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDecoratorName = exports.getDecoratorArguments = exports.getDefaultTypeFormatFlags = exports.getText = exports.hasObjectFlag = exports.hasFlag = exports.isEnumLiteral = exports.isEnum = exports.isInterface = exports.isNumber = exports.isString = exports.isBoolean = exports.getTypeArguments = exports.isArray = void 0;
+exports.getDescriptionOfNode = exports.getDecoratorName = exports.getDecoratorArguments = exports.getDefaultTypeFormatFlags = exports.getText = exports.hasObjectFlag = exports.hasFlag = exports.isEnumLiteral = exports.isEnum = exports.isInterface = exports.isNumber = exports.isString = exports.isBoolean = exports.getTypeArguments = exports.isArray = void 0;
 const typescript_1 = require("typescript");
 const plugin_utils_1 = require("./plugin-utils");
 function isArray(type) {
@@ -112,3 +112,23 @@ function getNameFromExpression(expression) {
     }
     return expression;
 }
+function getDescriptionOfNode(node, sourceFile) {
+    const sourceText = sourceFile.getFullText();
+    const replaceRegex = /^ *\** *@.*$|^ *\/\*+ *|^ *\/\/+.*|^ *\/+ *|^ *\*+ *| +$| *\**\/ *$/gim;
+    const description = [];
+    const introspectCommentsAndExamples = (comments) => comments === null || comments === void 0 ? void 0 : comments.forEach((comment) => {
+        const commentSource = sourceText.substring(comment.pos, comment.end);
+        const oneComment = commentSource.replace(replaceRegex, '').trim();
+        if (oneComment) {
+            description.push(oneComment);
+        }
+    });
+    const leadingCommentRanges = typescript_1.getLeadingCommentRanges(sourceText, node.getFullStart());
+    introspectCommentsAndExamples(leadingCommentRanges);
+    if (!description.length) {
+        const trailingCommentRanges = typescript_1.getTrailingCommentRanges(sourceText, node.getFullStart());
+        introspectCommentsAndExamples(trailingCommentRanges);
+    }
+    return description.join('\n');
+}
+exports.getDescriptionOfNode = getDescriptionOfNode;

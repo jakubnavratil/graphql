@@ -12,20 +12,24 @@ let TypeDefinitionsStorage = (() => {
             this.objectTypeDefinitions = new Map();
             this.inputTypeDefinitions = new Map();
         }
+        clear() {
+            this.inputTypeDefinitionsLinks = null;
+            this.outputTypeDefinitionsLinks = null;
+        }
         addEnums(enumDefs) {
-            enumDefs.forEach(item => this.enumTypeDefinitions.set(item.enumRef, item));
+            enumDefs.forEach((item) => this.enumTypeDefinitions.set(item.enumRef, item));
         }
         getEnumByObject(obj) {
             return this.enumTypeDefinitions.get(obj);
         }
         addUnions(unionDefs) {
-            unionDefs.forEach(item => this.unionTypeDefinitions.set(item.id, item));
+            unionDefs.forEach((item) => this.unionTypeDefinitions.set(item.id, item));
         }
         getUnionBySymbol(key) {
             return this.unionTypeDefinitions.get(key);
         }
         addInterfaces(interfaceDefs) {
-            interfaceDefs.forEach(item => this.interfaceTypeDefinitions.set(item.target, item));
+            interfaceDefs.forEach((item) => this.interfaceTypeDefinitions.set(item.target, item));
         }
         getInterfaceByTarget(type) {
             return this.interfaceTypeDefinitions.get(type);
@@ -34,7 +38,7 @@ let TypeDefinitionsStorage = (() => {
             return Array.from(this.interfaceTypeDefinitions.values());
         }
         addInputTypes(inputDefs) {
-            inputDefs.forEach(item => this.inputTypeDefinitions.set(item.target, item));
+            inputDefs.forEach((item) => this.inputTypeDefinitions.set(item.target, item));
         }
         getInputTypeByTarget(type) {
             return this.inputTypeDefinitions.get(type);
@@ -43,7 +47,7 @@ let TypeDefinitionsStorage = (() => {
             return Array.from(this.inputTypeDefinitions.values());
         }
         addObjectTypes(objectDefs) {
-            objectDefs.forEach(item => this.objectTypeDefinitions.set(item.target, item));
+            objectDefs.forEach((item) => this.objectTypeDefinitions.set(item.target, item));
         }
         getObjectTypeByTarget(type) {
             return this.objectTypeDefinitions.get(type);

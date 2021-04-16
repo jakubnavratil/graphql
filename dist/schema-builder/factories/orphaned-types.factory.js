@@ -5,6 +5,7 @@ const tslib_1 = require("tslib");
 const common_1 = require("@nestjs/common");
 const orphaned_reference_registry_1 = require("../services/orphaned-reference.registry");
 const type_definitions_storage_1 = require("../storages/type-definitions.storage");
+const get_interfaces_array_util_1 = require("../utils/get-interfaces-array.util");
 let OrphanedTypesFactory = (() => {
     let OrphanedTypesFactory = class OrphanedTypesFactory {
         constructor(typeDefinitionsStorage, orphanedReferenceRegistry) {
@@ -25,10 +26,9 @@ let OrphanedTypesFactory = (() => {
                 ...inputTypeDefs,
             ];
             return classTypeDefs
-                .filter(item => !item.isAbstract)
-                .filter(item => {
-                const implementsReferencedInterface = item.interfaces &&
-                    item.interfaces.some(i => types.includes(i));
+                .filter((item) => !item.isAbstract)
+                .filter((item) => {
+                const implementsReferencedInterface = get_interfaces_array_util_1.getInterfacesArray(item.interfaces).some((i) => types.includes(i));
                 return types.includes(item.target) || implementsReferencedInterface;
             })
                 .map(({ type }) => type);

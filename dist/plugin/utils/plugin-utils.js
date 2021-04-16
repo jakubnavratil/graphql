@@ -43,6 +43,9 @@ function getTypeReferenceAsString(type, typeChecker) {
         if (text === Date.name) {
             return text;
         }
+        if (isOptionalBoolean(text)) {
+            return Boolean.name;
+        }
         if (ast_utils_1.isEnum(type)) {
             return ast_utils_1.getText(type, typeChecker);
         }
@@ -94,8 +97,9 @@ function replaceImportPath(typeReference, fileName) {
     if (!importPath) {
         return undefined;
     }
+    importPath = convertPath(importPath);
     importPath = importPath.slice(2, importPath.length - 1);
-    let relativePath = path_1.relative(path_1.dirname(fileName), importPath);
+    let relativePath = path_1.posix.relative(path_1.posix.dirname(fileName), importPath);
     relativePath = relativePath[0] !== '.' ? './' + relativePath : relativePath;
     const nodeModulesText = 'node_modules';
     const nodeModulePos = relativePath.indexOf(nodeModulesText);
@@ -185,3 +189,12 @@ function extractTypeArgumentIfArray(type) {
     };
 }
 exports.extractTypeArgumentIfArray = extractTypeArgumentIfArray;
+function isOptionalBoolean(text) {
+    return typeof text === 'string' && text === 'boolean | undefined';
+}
+function convertPath(windowsPath) {
+    return windowsPath
+        .replace(/^\\\\\?\\/, '')
+        .replace(/\\/g, '/')
+        .replace(/\/\/+/g, '/');
+}

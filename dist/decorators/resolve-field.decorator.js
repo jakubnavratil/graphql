@@ -9,6 +9,7 @@ const type_metadata_storage_1 = require("../schema-builder/storages/type-metadat
 const reflection_utilts_1 = require("../utils/reflection.utilts");
 function ResolveField(propertyNameOrFunc, typeFuncOrOptions, resolveFieldOptions) {
     return (target, key, descriptor) => {
+        var _a;
         let [propertyName, typeFunc, options] = shared_utils_1.isFunction(propertyNameOrFunc)
             ? typeFuncOrOptions && typeFuncOrOptions.name
                 ? [typeFuncOrOptions.name, propertyNameOrFunc, typeFuncOrOptions]
@@ -16,6 +17,7 @@ function ResolveField(propertyNameOrFunc, typeFuncOrOptions, resolveFieldOptions
             : [propertyNameOrFunc, typeFuncOrOptions, resolveFieldOptions];
         common_1.SetMetadata(graphql_constants_1.RESOLVER_NAME_METADATA, propertyName)(target, key, descriptor);
         common_1.SetMetadata(graphql_constants_1.RESOLVER_PROPERTY_METADATA, true)(target, key, descriptor);
+        common_1.SetMetadata(graphql_constants_1.FIELD_RESOLVER_MIDDLEWARE_METADATA, (_a = options) === null || _a === void 0 ? void 0 : _a.middleware)(target, key, descriptor);
         options = shared_utils_1.isObject(options)
             ? Object.assign({ name: propertyName }, options) : propertyName
             ? { name: propertyName }

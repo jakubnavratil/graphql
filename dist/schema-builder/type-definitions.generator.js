@@ -27,29 +27,32 @@ let TypeDefinitionsGenerator = (() => {
             this.generateObjectTypeDefs(options);
             this.generateInputTypeDefs(options);
         }
+        clearTypeDefinitionStorage() {
+            this.typeDefinitionsStorage.clear();
+        }
         generateInputTypeDefs(options) {
             const metadata = type_metadata_storage_1.TypeMetadataStorage.getInputTypesMetadata();
-            const inputTypeDefs = metadata.map(metadata => this.inputTypeDefinitionFactory.create(metadata, options));
+            const inputTypeDefs = metadata.map((metadata) => this.inputTypeDefinitionFactory.create(metadata, options));
             this.typeDefinitionsStorage.addInputTypes(inputTypeDefs);
         }
         generateObjectTypeDefs(options) {
             const metadata = type_metadata_storage_1.TypeMetadataStorage.getObjectTypesMetadata();
-            const objectTypeDefs = metadata.map(metadata => this.objectTypeDefinitionFactory.create(metadata, options));
+            const objectTypeDefs = metadata.map((metadata) => this.objectTypeDefinitionFactory.create(metadata, options));
             this.typeDefinitionsStorage.addObjectTypes(objectTypeDefs);
         }
         generateInterfaceDefs(options) {
             const metadata = type_metadata_storage_1.TypeMetadataStorage.getInterfacesMetadata();
-            const interfaceDefs = metadata.map(metadata => this.interfaceDefinitionFactory.create(metadata, options));
+            const interfaceDefs = metadata.map((metadata) => this.interfaceDefinitionFactory.create(metadata, options));
             this.typeDefinitionsStorage.addInterfaces(interfaceDefs);
         }
         generateEnumDefs() {
             const metadata = type_metadata_storage_1.TypeMetadataStorage.getEnumsMetadata();
-            const enumDefs = metadata.map(metadata => this.enumDefinitionFactory.create(metadata));
+            const enumDefs = metadata.map((metadata) => this.enumDefinitionFactory.create(metadata));
             this.typeDefinitionsStorage.addEnums(enumDefs);
         }
         generateUnionDefs() {
             const metadata = type_metadata_storage_1.TypeMetadataStorage.getUnionsMetadata();
-            const unionDefs = metadata.map(metadata => this.unionDefinitionFactory.create(metadata));
+            const unionDefs = metadata.map((metadata) => this.unionDefinitionFactory.create(metadata));
             this.typeDefinitionsStorage.addUnions(unionDefs);
         }
     };

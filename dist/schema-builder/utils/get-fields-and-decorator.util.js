@@ -13,9 +13,12 @@ function getFieldsAndDecoratorForType(objType) {
     if (!classType) {
         throw new unable_to_find_fields_error_1.UnableToFindFieldsError(objType.name);
     }
-    lazy_metadata_storage_1.LazyMetadataStorage.load([objType]);
-    type_metadata_storage_1.TypeMetadataStorage.compile();
+    lazy_metadata_storage_1.LazyMetadataStorage.load([objType], {
+        skipFieldLazyMetadata: true,
+    });
     const [classMetadata, decoratorFactory,] = getClassMetadataAndFactoryByTargetAndType(classType, objType);
+    type_metadata_storage_1.TypeMetadataStorage.loadClassPluginMetadata([classMetadata]);
+    type_metadata_storage_1.TypeMetadataStorage.compileClassMetadata([classMetadata]);
     let fields = classMetadata === null || classMetadata === void 0 ? void 0 : classMetadata.properties;
     if (!fields) {
         throw new unable_to_find_fields_error_1.UnableToFindFieldsError(objType.name);

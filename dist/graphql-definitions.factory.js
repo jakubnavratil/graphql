@@ -2,12 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GraphQLDefinitionsFactory = void 0;
 const tslib_1 = require("tslib");
+const schema_1 = require("@graphql-tools/schema");
 const load_package_util_1 = require("@nestjs/common/utils/load-package.util");
 const shared_utils_1 = require("@nestjs/common/utils/shared.utils");
 const apollo_server_core_1 = require("apollo-server-core");
 const chokidar = require("chokidar");
 const graphql_1 = require("graphql");
-const graphql_tools_1 = require("graphql-tools");
 const graphql_ast_explorer_1 = require("./graphql-ast.explorer");
 const graphql_types_loader_1 = require("./graphql-types.loader");
 const utils_1 = require("./utils");
@@ -27,6 +27,9 @@ class GraphQLDefinitionsFactory {
             const definitionsGeneratorOptions = {
                 emitTypenameField: options.emitTypenameField,
                 skipResolverArgs: options.skipResolverArgs,
+                defaultScalarType: options.defaultScalarType,
+                customScalarTypeMapping: options.customScalarTypeMapping,
+                additionalHeader: options.additionalHeader,
             };
             if (options.watch) {
                 this.printMessage('GraphQL factory is watching your files...', isDebugEnabled);
@@ -72,9 +75,9 @@ class GraphQLDefinitionsFactory {
             if (!typeDefs) {
                 throw new Error(`"typeDefs" property cannot be null.`);
             }
-            let schema = graphql_tools_1.makeExecutableSchema({
+            let schema = schema_1.makeExecutableSchema({
                 typeDefs,
-                resolverValidationOptions: { allowResolversNotInSchema: true },
+                resolverValidationOptions: { requireResolversToMatchSchema: 'ignore' },
             });
             schema = utils_1.removeTempField(schema);
             const tsFile = yield this.gqlAstExplorer.explore(apollo_server_core_1.gql `

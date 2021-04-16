@@ -13,7 +13,7 @@ let InputTypeFactory = (() => {
             this.typeMapperService = typeMapperService;
         }
         create(hostType, typeRef, buildOptions, typeOptions = {}) {
-            let inputType = this.typeMapperService.mapToScalarType(typeRef, buildOptions.scalarsMap, buildOptions.dateScalarMode);
+            let inputType = this.typeMapperService.mapToScalarType(typeRef, buildOptions.scalarsMap, buildOptions.dateScalarMode, buildOptions.numberScalarMode);
             if (!inputType) {
                 inputType = this.typeDefinitionsStorage.getInputTypeAndExtract(typeRef);
                 if (!inputType) {

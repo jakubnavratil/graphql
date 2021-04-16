@@ -1,6 +1,5 @@
 export interface PluginOptions {
-  typeFileNameSuffix?: string | string[];
+    typeFileNameSuffix?: string | string[];
+    introspectComments?: boolean;
 }
-export declare const mergePluginOptions: (
-  options?: Record<string, any>,
-) => PluginOptions;
+export declare const mergePluginOptions: (options?: Record<string, any>) => PluginOptions;

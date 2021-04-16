@@ -4,6 +4,7 @@ exports.ArgsFactory = void 0;
 const tslib_1 = require("tslib");
 const common_1 = require("@nestjs/common");
 const shared_utils_1 = require("@nestjs/common/utils/shared.utils");
+const cannot_determine_arg_type_error_1 = require("../errors/cannot-determine-arg-type.error");
 const get_default_value_helper_1 = require("../helpers/get-default-value.helper");
 const type_metadata_storage_1 = require("../storages/type-metadata.storage");
 const input_type_factory_1 = require("./input-type.factory");
@@ -14,7 +15,7 @@ let ArgsFactory = (() => {
         }
         create(args, options) {
             const fieldConfigMap = {};
-            args.forEach(param => {
+            args.forEach((param) => {
                 if (param.kind === 'arg') {
                     fieldConfigMap[param.name] = {
                         description: param.description,
@@ -25,10 +26,13 @@ let ArgsFactory = (() => {
                 else if (param.kind === 'args') {
                     const argumentTypes = type_metadata_storage_1.TypeMetadataStorage.getArgumentsMetadata();
                     const hostType = param.typeFn();
-                    const argumentType = argumentTypes.find(item => item.target === hostType);
+                    const argumentType = argumentTypes.find((item) => item.target === hostType);
+                    if (!argumentType) {
+                        throw new cannot_determine_arg_type_error_1.CannotDetermineArgTypeError(hostType.name || hostType, param);
+                    }
                     let parent = Object.getPrototypeOf(argumentType.target);
                     while (!shared_utils_1.isUndefined(parent.prototype)) {
-                        const parentArgType = argumentTypes.find(item => item.target === parent);
+                        const parentArgType = argumentTypes.find((item) => item.target === parent);
                         if (parentArgType) {
                             this.inheritParentArgs(parentArgType, options, fieldConfigMap);
                         }
@@ -41,7 +45,7 @@ let ArgsFactory = (() => {
         }
         inheritParentArgs(argType, options, fieldConfigMap = {}) {
             const argumentInstance = new argType.target();
-            argType.properties.forEach(field => {
+            argType.properties.forEach((field) => {
                 field.options.defaultValue = get_default_value_helper_1.getDefaultValue(argumentInstance, field.options, field.name, argType.name);
                 const { schemaName } = field;
                 fieldConfigMap[schemaName] = {

@@ -5,11 +5,12 @@ const lodash_1 = require("lodash");
 const ts = require("typescript");
 const decorators_1 = require("../../decorators");
 const plugin_constants_1 = require("../plugin-constants");
+const ast_utils_1 = require("../utils/ast-utils");
 const plugin_utils_1 = require("../utils/plugin-utils");
 const metadataHostMap = new Map();
 const importsToAddPerFile = new Map();
 class ModelClassVisitor {
-    visit(sourceFile, ctx, program) {
+    visit(sourceFile, ctx, program, pluginOptions) {
         const typeChecker = program.getTypeChecker();
         const visitNode = (node) => {
             if (ts.isClassDeclaration(node)) {
@@ -28,7 +29,7 @@ class ModelClassVisitor {
                     return node;
                 }
                 try {
-                    this.inspectPropertyDeclaration(node, typeChecker, sourceFile.fileName, sourceFile);
+                    this.inspectPropertyDeclaration(node, typeChecker, sourceFile.fileName, sourceFile, pluginOptions);
                 }
                 catch (err) {
                     return node;
@@ -66,22 +67,23 @@ class ModelClassVisitor {
         ]);
         return classMutableNode;
     }
-    inspectPropertyDeclaration(compilerNode, typeChecker, hostFilename, sourceFile) {
-        const objectLiteralExpr = this.createDecoratorObjectLiteralExpr(compilerNode, typeChecker, ts.createNodeArray(), hostFilename);
+    inspectPropertyDeclaration(compilerNode, typeChecker, hostFilename, sourceFile, pluginOptions) {
+        const objectLiteralExpr = this.createDecoratorObjectLiteralExpr(compilerNode, typeChecker, ts.createNodeArray(), hostFilename, sourceFile, pluginOptions);
         this.addClassMetadata(compilerNode, objectLiteralExpr, sourceFile);
     }
-    createDecoratorObjectLiteralExpr(node, typeChecker, existingProperties = ts.createNodeArray(), hostFilename = '') {
+    createDecoratorObjectLiteralExpr(node, typeChecker, existingProperties = ts.createNodeArray(), hostFilename = '', sourceFile, pluginOptions) {
         const isRequired = !node.questionToken;
         const properties = [
             ...existingProperties,
             !plugin_utils_1.hasPropertyKey('nullable', existingProperties) &&
                 ts.createPropertyAssignment('nullable', ts.createLiteral(!isRequired)),
-            this.createTypePropertyAssignment(node, typeChecker, existingProperties, hostFilename),
+            this.createTypePropertyAssignment(node, typeChecker, existingProperties, hostFilename, sourceFile, pluginOptions),
+            this.createDescriptionPropertyAssigment(node, existingProperties, pluginOptions, sourceFile),
         ];
         const objectLiteral = ts.createObjectLiteral(lodash_1.compact(lodash_1.flatten(properties)));
         return objectLiteral;
     }
-    createTypePropertyAssignment(node, typeChecker, existingProperties, hostFilename) {
+    createTypePropertyAssignment(node, typeChecker, existingProperties, hostFilename, sourceFile, pluginOptions) {
         const key = 'type';
         if (plugin_utils_1.hasPropertyKey(key, existingProperties)) {
             return undefined;
@@ -92,7 +94,7 @@ class ModelClassVisitor {
         }
         if (node.type && ts.isTypeLiteralNode(node.type)) {
             const propertyAssignments = Array.from(node.type.members || []).map((member) => {
-                const literalExpr = this.createDecoratorObjectLiteralExpr(member, typeChecker, existingProperties, hostFilename);
+                const literalExpr = this.createDecoratorObjectLiteralExpr(member, typeChecker, existingProperties, hostFilename, sourceFile, pluginOptions);
                 return ts.createPropertyAssignment(ts.createIdentifier(member.name.getText()), literalExpr);
             });
             return ts.createPropertyAssignment(key, ts.createArrowFunction(undefined, undefined, [], undefined, undefined, ts.createParen(ts.createObjectLiteral(propertyAssignments))));
@@ -136,12 +138,30 @@ class ModelClassVisitor {
         return metadataHostMap.get(node.name.getText());
     }
     updateImports(sourceFile, pathsToImport) {
+        var _a;
+        const [major, minor] = (_a = ts.versionMajorMinor) === null || _a === void 0 ? void 0 : _a.split('.').map((x) => +x);
         const IMPORT_PREFIX = 'eager_import_';
-        const importDeclarations = pathsToImport.map((path, index) => ts.createImportEqualsDeclaration(undefined, undefined, IMPORT_PREFIX + index, ts.createExternalModuleReference(ts.createLiteral(path))));
+        const importDeclarations = pathsToImport.map((path, index) => {
+            if (major == 4 && minor >= 2) {
+                return ts.createImportEqualsDeclaration(undefined, undefined, false, IMPORT_PREFIX + index, ts.createExternalModuleReference(ts.createLiteral(path)));
+            }
+            return ts.createImportEqualsDeclaration(undefined, undefined, IMPORT_PREFIX + index, ts.createExternalModuleReference(ts.createLiteral(path)));
+        });
         return ts.updateSourceFileNode(sourceFile, [
             ...importDeclarations,
             ...sourceFile.statements,
         ]);
+    }
+    createDescriptionPropertyAssigment(node, existingProperties = ts.createNodeArray(), options = {}, sourceFile) {
+        if (!options.introspectComments || !sourceFile) {
+            return;
+        }
+        const description = ast_utils_1.getDescriptionOfNode(node, sourceFile);
+        const keyOfComment = 'description';
+        if (!plugin_utils_1.hasPropertyKey(keyOfComment, existingProperties) && description) {
+            const descriptionPropertyAssignment = ts.createPropertyAssignment(keyOfComment, ts.createLiteral(description));
+            return descriptionPropertyAssignment;
+        }
     }
 }
 exports.ModelClassVisitor = ModelClassVisitor;

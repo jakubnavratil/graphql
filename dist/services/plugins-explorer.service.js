@@ -15,7 +15,7 @@ let PluginsExplorerService = (() => {
         }
         explore() {
             const modules = this.getModules(this.modulesContainer, this.gqlOptions.include || []);
-            return this.flatMap(modules, instance => this.filterPlugins(instance));
+            return this.flatMap(modules, (instance) => this.filterPlugins(instance));
         }
         filterPlugins(wrapper) {
             const { instance } = wrapper;

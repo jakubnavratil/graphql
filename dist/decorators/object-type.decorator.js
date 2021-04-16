@@ -10,15 +10,12 @@ function ObjectType(nameOrOptions, objectTypeOptions) {
     const [name, options = {}] = shared_utils_1.isString(nameOrOptions)
         ? [nameOrOptions, objectTypeOptions]
         : [undefined, nameOrOptions];
-    const interfaces = options.implements
-        ? [].concat(options.implements)
-        : undefined;
     return (target) => {
         const addObjectTypeMetadata = () => type_metadata_storage_1.TypeMetadataStorage.addObjectTypeMetadata({
             name: name || target.name,
             target,
             description: options.description,
-            interfaces,
+            interfaces: options.implements,
             isAbstract: options.isAbstract,
         });
         addObjectTypeMetadata();

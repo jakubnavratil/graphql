@@ -13,7 +13,7 @@ let OutputTypeFactory = (() => {
             this.typeMapperService = typeMapperService;
         }
         create(hostType, typeRef, buildOptions, typeOptions = {}) {
-            let gqlType = this.typeMapperService.mapToScalarType(typeRef, buildOptions.scalarsMap, buildOptions.dateScalarMode);
+            let gqlType = this.typeMapperService.mapToScalarType(typeRef, buildOptions.scalarsMap, buildOptions.dateScalarMode, buildOptions.numberScalarMode);
             if (!gqlType) {
                 gqlType = this.typeDefinitionsStorage.getOutputTypeAndExtract(typeRef);
                 if (!gqlType) {
